@@ -162,4 +162,3 @@ if st.button("🎯 REVEAL MY DATA PERSONALITY!"):
 
     fig.update_layout(xaxis_tickangle=0, showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
-
