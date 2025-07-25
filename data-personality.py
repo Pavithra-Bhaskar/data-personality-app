@@ -1,166 +1,144 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # ---------- PAGE CONFIG ----------
 st.set_page_config(page_title="Data Science Personality Quiz", layout="centered")
 
-# ---------- TITLE ----------
 st.title("🧬 What's Your Data Science Personality?")
-st.write("Take this fun quiz to discover your **data superpower!** 💡")
+st.write("Answer these fun questions to discover your **data superpower**!")
 
-# ---------- SCORE TRACKER ----------
+# ---------- Score Tracker ----------
 scores = {
-    "viz": 0,
-    "ml": 0,
-    "cleaning": 0,
-    "insight": 0,
-    "dashboard": 0
+    "viz": 0,        # 🎨 Data Viz Artist
+    "ml": 0,         # 🤖 ML Mastermind
+    "cleaning": 0,   # 🧼 Data Cleaning Wizard
+    "insight": 0,    # 🔍 Insight Hunter
+    "dashboard": 0   # 📊 Dashboard Boss
 }
 
-# ---------- QUESTIONS ----------
+# ---------- Personality Keywords ----------
+personality_keywords = {
+    "viz": ["chart", "plot", "visual", "tableau", "look", "amazing"],
+    "ml": ["model", "ai", "xgboost", "neural", "train", "problem"],
+    "cleaning": ["clean", "mess", "pandas", "fix", "broken"],
+    "insight": ["pattern", "trend", "sql", "study", "see"],
+    "dashboard": ["dashboard", "report", "power bi", "explain"]
+}
+
+# ---------- Questions ----------
 questions = [
-    ("🎯 What do you enjoy most in a data project?", [
-        "Finding hidden patterns",
-        "Cleaning messy data",
-        "Making beautiful charts",
-        "Building smart models",
-        "Creating dashboards for decisions"
+    ("1. What do you enjoy most in a data project?", [
+        "Finding hidden patterns",         # insight
+        "Cleaning messy data",             # cleaning
+        "Making beautiful charts",         # viz
+        "Creating dashboards for decisions",  # dashboard
+        "Building smart models"            # ml
     ]),
-    ("🛠️ What's your favorite data tool?", [
-        "Power BI or Looker",
-        "Pandas or OpenRefine",
-        "SQL or NLP libraries",
-        "Scikit-learn or XGBoost",
-        "Plotly or Tableau"
+    ("2. What's your favorite data tool?", [
+        "Power BI or Looker",              # dashboard
+        "Scikit-learn or XGBoost",         # ml
+        "Plotly or Tableau",               # viz
+        "SQL or NLP libraries",            # insight
+        "Pandas or OpenRefine"             # cleaning
     ]),
-    ("🐾 Your data spirit animal?", [
-        "Ant (organized, reliable)",
-        "Peacock (stylish, colorful)",
-        "Wolf (strategic, sharp)",
-        "Owl (observant, curious)",
-        "Beaver (builder, fixer)"
+    ("3. Your data spirit animal?", [
+        "Beaver (builder, fixer)",         # cleaning
+        "Owl (observant, curious)",        # insight
+        "Wolf (strategic, sharp)",         # ml
+        "Peacock (stylish, colorful)",     # viz
+        "Ant (organized, reliable)"        # dashboard
     ]),
-    ("📂 You open a messy CSV file. You:", [
-        "Study the weird patterns",
-        "Fix every row",
-        "Document issues for reporting",
-        "Start plotting it",
-        "Train a model on it anyway"
+    ("4. You open a messy CSV file. You:", [
+        "Start plotting it",               # viz
+        "Fix every row",                   # cleaning
+        "Document issues for reporting",   # dashboard
+        "Study the weird patterns",        # insight
+        "Train a model on it anyway"       # ml
     ]),
-    ("💬 What do people say you're good at?", [
-        "Explaining clearly with visuals",
-        "Fixing broken stuff",
-        "Solving complex problems",
-        "Making things look amazing",
-        "Seeing what others miss"
+    ("5. What do people say you're good at?", [
+        "Fixing broken stuff",             # cleaning
+        "Making things look amazing",      # viz
+        "Explaining clearly with visuals", # dashboard
+        "Seeing what others miss",         # insight
+        "Solving complex problems"         # ml
     ]),
-    ("🎮 Which task sounds the most fun?", [
-        "Designing colorful dashboards",
-        "Writing SQL queries to explore data",
-        "Building machine learning pipelines",
-        "Cleaning columns and formatting",
-        "Visual storytelling with data"
+    ("6. If data were food, you'd be the:", [
+        "Recipe creator (modeling expert)",     # ml
+        "Chef (beautiful plating)",             # viz
+        "Inspector (quality controller)",       # cleaning
+        "Nutritionist (insights extractor)",    # insight
+        "Waiter (delivering with clarity)"      # dashboard
     ]),
-    ("🧰 What’s your secret weapon?", [
-        "Clear communication",
-        "Model accuracy",
-        "Pattern recognition",
-        "Chart design",
-        "Data wrangling"
+    ("7. Your dream project involves:", [
+        "Predicting the future with data",      # ml
+        "Designing impactful dashboards",       # dashboard
+        "Untangling complex raw data",          # cleaning
+        "Visual storytelling",                  # viz
+        "Finding trends no one noticed"         # insight
     ]),
-    ("👥 Your ideal team role is:", [
-        "Insight digger",
-        "Dashboard designer",
-        "ML engineer",
-        "Visualization expert",
-        "Data janitor"
+    ("8. A colleague asks for help with messy data. You:", [
+        "Jump in and clean it up",              # cleaning
+        "Plot the distributions",               # viz
+        "Document the issues clearly",          # dashboard
+        "Look for odd trends",                  # insight
+        "Try training a quick model"            # ml
     ]),
-    ("🔥 What motivates you most?", [
-        "Spotting hidden stories",
-        "Building smart tools",
-        "Fixing messy problems",
-        "Helping teams see clearly",
-        "Making complex things look simple"
+    ("9. Which sounds most like you?", [
+        "Pattern detector",                     # insight
+        "Visualizer",                           # viz
+        "Fixer",                                # cleaning
+        "Strategist",                           # ml
+        "Communicator"                          # dashboard
     ]),
-    ("🎁 Choose a gift for your data friend:", [
-        "Color palettes and fonts",
-        "Deep learning course",
-        "SQL cookbook",
-        "Dashboard templates",
-        "Data cleaning scripts"
+    ("10. Which role would you thrive in?", [
+        "Data storyteller",                     # viz
+        "Machine learning engineer",            # ml
+        "Data janitor",                         # cleaning
+        "Insight analyst",                      # insight
+        "Business intelligence developer"       # dashboard
     ])
 ]
 
-# ---------- KEYWORDS TO MATCH ----------
-personality_keywords = {
-    "viz": ["chart", "plot", "visual", "peacock", "amazing", "design", "storytelling", "fonts", "color"],
-    "ml": ["model", "ai", "xgboost", "neural", "wolf", "train", "ml", "deep", "engineer", "pipelines", "accuracy"],
-    "cleaning": ["clean", "fix", "pandas", "beaver", "wrangling", "format", "janitor", "scripts"],
-    "insight": ["pattern", "trend", "sql", "owl", "see", "study", "stories", "recognition", "digger", "cookbook"],
-    "dashboard": ["dashboard", "report", "power bi", "look", "ant", "explain", "designer", "templates"]
-}
-
-# ---------- COLLECT ANSWERS ----------
+# ---------- Capture Answers ----------
 answers = []
-for i, (question, options) in enumerate(questions):
-    selected = st.radio(f"{i+1}. {question}", [""] + options, key=f"q{i+1}")
-    answers.append(selected)
 
-# ---------- REVEAL RESULT ----------
+for q_text, q_options in questions:
+    response = st.radio(q_text, q_options, index=None)
+    answers.append(response)
+
+# ---------- Score Calculation ----------
 if st.button("🎯 REVEAL MY DATA PERSONALITY!"):
     for answer in answers:
-        answer_lower = answer.lower()
-        for personality, keywords in personality_keywords.items():
-            if any(keyword in answer_lower for keyword in keywords):
-                scores[personality] += 1
+        if answer:  # Ensure user selected something
+            answer_lower = answer.lower()
+            for personality, keywords in personality_keywords.items():
+                if any(keyword in answer_lower for keyword in keywords):
+                    scores[personality] += 1
 
     top = max(scores, key=scores.get)
-
-    personalities = {
-        "viz": {
-            "emoji": "🎨",
-            "title": "The Data Viz Artist",
-            "desc": "You make data beautiful and clear. People feel your charts."
-        },
-        "ml": {
-            "emoji": "🤖",
-            "title": "The ML Mastermind",
-            "desc": "You love solving problems and training smart systems."
-        },
-        "cleaning": {
-            "emoji": "🧼",
-            "title": "The Data Cleaning Wizard",
-            "desc": "You're the hero who turns chaos into clean, usable data."
-        },
-        "insight": {
-            "emoji": "🔍",
-            "title": "The Insight Hunter",
-            "desc": "You live for discovering hidden stories others miss."
-        },
-        "dashboard": {
-            "emoji": "📊",
-            "title": "The Dashboard Boss",
-            "desc": "You transform complex data into clear, actionable dashboards."
-        }
-    }
 
     # 🎉 Celebration
     st.balloons()
 
-    # 🎯 Result card
-    p = personalities[top]
-    st.markdown(f"""
-    <div style="border: 2px solid #bbb; border-radius: 12px; padding: 1.2em; background-color: #f9f9f9;">
-        <h2 style="color:#333;">{p['emoji']} <strong>{p['title']}</strong></h2>
-        <p style="font-size: 1.1em;">{p['desc']}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # ---------- Result ----------
+    st.markdown(f"### {top.title()} Personality")
+    if top == "viz":
+        st.info("🎨 **The Data Viz Artist** — You make data beautiful and clear. People feel your charts.")
+    elif top == "ml":
+        st.info("🤖 **The ML Mastermind** — You love solving problems and training smart systems.")
+    elif top == "cleaning":
+        st.info("🧼 **The Data Cleaning Wizard** — You're the hero who turns chaos into clean data.")
+    elif top == "insight":
+        st.info("🔍 **The Insight Hunter** — You live for those hidden discoveries in data.")
+    elif top == "dashboard":
+        st.info("📊 **The Dashboard Boss** — You translate data into decisions with clarity.")
 
-    st.toast("🥳 Personality revealed! Scroll up to view your result.")
-
-    # 📊 Score Breakdown Chart
+    # ---------- Bar Chart ----------
     st.markdown("### 📊 Your Full Score Breakdown")
-    personality_labels = {
+
+    # Rename for display
+    labels = {
         "viz": "🎨 Data Viz Artist",
         "ml": "🤖 ML Mastermind",
         "cleaning": "🧼 Cleaning Wizard",
@@ -168,9 +146,20 @@ if st.button("🎯 REVEAL MY DATA PERSONALITY!"):
         "dashboard": "📊 Dashboard Boss"
     }
 
-    score_df = pd.DataFrame({
-        "Personality": [personality_labels[key] for key in scores],
-        "Score": [scores[key] for key in scores]
-    }).sort_values(by="Score", ascending=True)
+    df = pd.DataFrame({
+        "Personality": [labels[k] for k in scores.keys()],
+        "Score": list(scores.values())
+    })
 
-    st.bar_chart(score_df.set_index("Personality"))
+    fig = px.bar(
+        df,
+        x="Personality",
+        y="Score",
+        color="Personality",
+        text="Score",
+        color_discrete_sequence=px.colors.qualitative.Pastel
+    )
+
+    fig.update_layout(xaxis_tickangle=0, showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
