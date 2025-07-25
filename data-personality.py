@@ -75,7 +75,7 @@ answers = [q1,q2,q3,q4,q5]
 
 for answer in answers:
     answer_lower= answer.lower()
-    for personality, keywords in enumerate(personality_keywords):
+    for personality, keywords in personality_keywords.items():
         if any(keyword in answer_lower for keyword in keywords):
             scores[personality]+=1
             
